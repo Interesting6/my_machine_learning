@@ -1,13 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python 
 # -*- coding: utf-8 -*-
-"""
-@version: py3.5        @license: Apache Licence
-@author: 'Treamy'    @contact: chenymcan@gmail.com
-@file: my_knn.py      @software: PyCharm
+""" 
+@version: py3.5        @license: Apache Licence  
+@author: 'Treamy'    @contact: chenymcan@gmail.com 
+@file: my_knn.py      @software: PyCharm 
 @time: 2018/2/4 22:05 @site: www.ymchen.cn
 """
 
 import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
 
 class my_knn(object):
     """docstring for my_knn"""
@@ -51,11 +53,17 @@ def run():
 
 
 if __name__ == "__main__":
-
+    data_set = load_iris()
+    datas = data_set["data"]
+    labels = data_set['target']
+    X_train, X_test, y_train, y_test = train_test_split(datas, labels, test_size=0.4, random_state=0)
     knn = my_knn(1)
-    data = np.array([[3, 104], [2, 100], [1, 81], [101, 10], [99, 5], [98, 2]])
-    labels = np.array([1, 1, 1, 2, 2, 2])
-    knn = knn.train(data,labels)
-    accuracy = knn.calc_accuracy(data,labels)
+    knn = knn.train(X_train,y_train)
+    accuracy = knn.calc_accuracy(X_test,y_test)
     print("%.3f%%" % (accuracy * 100))
 
+    from sklearn.neighbors import KNeighborsClassifier
+    neigh = KNeighborsClassifier(n_neighbors=1)
+    neigh.fit(X_train, y_train)
+    print(neigh.score(X_train,y_train))
+    print(neigh.score(X_test, y_test))
