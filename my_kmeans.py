@@ -90,7 +90,7 @@ def loadData(filePath):
     return retData, retCityName
 
 if __name__ == '__main__':
-    data, cityName =  loadData("E:\python1\exm\大学慕课\基础\KM\city.txt")
+    data, cityName =  loadData("./city.txt")
 
     km = my_kmeans(4)
     km = km.train(data)
@@ -119,6 +119,4 @@ if __name__ == '__main__':
         print(str(j+1),'线消费城市')
         CityNum.append(len(CityCluster[i]))
         print(CityCluster[i])
-
-
 
