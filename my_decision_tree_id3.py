@@ -36,24 +36,19 @@ class ID3_tree(object):
         if len(cate_values)==1:
             return cate_values[0]
         if len(feat) == 0:
-            return self.marjority(df[self.cate])
+            temp = df[self.cate].value_counts().to_dict()
+            return max(temp, key=lambda x:temp[x]) # 取最多的类别作为返回值
         best_feat = self.select(df, feat)
         my_tree = { best_feat:{} }
         unique_feat_values = df[best_feat].unique()
         # df = df.drop(best_feat, axis=1)
         for feat_value in unique_feat_values:
-            df_ = self.split_df(df,best_feat,feat_value)
+            df_ = df[df[best_feat] == feat_value].copy()
+            df_ =  df_.drop(best_feat, axis=1)
             # 这里一定不能是df，必须是一个新的df_，才能使递归*中的feat*越来越小
             my_tree[best_feat][feat_value] = self.create_tree(df_, )
         return my_tree
 
-    def split_df(self, df, feat, feat_value):
-        df = df[df[feat] == feat_value].copy()
-        return df.drop(feat, axis=1)
-
-    def marjority(self,se ):
-        temp = se.value_counts().to_dict()
-        return max(temp, key=lambda x:temp[x])
 
     def select(self,df, features ):
         gain_dict = {}
