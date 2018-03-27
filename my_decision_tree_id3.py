@@ -124,7 +124,7 @@ class ID3_tree(object):
                 self.xOff = self.xOff + 1.0 / self.totalW
                 self.plot_node(second_dict[key], (self.xOff, self.yOff), center_point, leaf_node)
                 self.plot_mid_text((self.xOff, self.yOff), center_point, str(key))
-        yOff = self.yOff + 1.0 / self.totalD
+        self.yOff = self.yOff + 1.0 / self.totalD
 
     def show_tree(self, tree_):
         fig = plt.figure(1, facecolor='white')
