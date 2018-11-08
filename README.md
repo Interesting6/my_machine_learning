@@ -3,23 +3,22 @@
 ## Classifying
 ### k Nearest Neighbor (knn)
 ### Logistic Regression
-
 ### Support Verctor Machine (SVM)
 
 ### Neural Networks
 
 ### Decision Tree
-#### ID3
-#### CART
+- ID3
+- CART
 
 ### Bayes Methods
-#### Naive Bayes
-#### Bayes Networks
+- Naive Bayes
+- Bayes Networks
 
 ### Ensemble Learning
-#### Boosting
-#### Bagging
-#### Random Forest
+- Boosting
+- Bagging
+- Random Forest
 
 
 
@@ -31,20 +30,20 @@
 
 ## Clusterring
 ### Prototype-Based Clustering
-#### k-means
-#### Gauss Mixture Modle (GMM)
-#### Learning Verctor Quantization (LVQ)
+- k-means
+- Gauss Mixture Modle (GMM)
+- Learning Verctor Quantization (LVQ)
 
 ### Density-Based Clustering
-#### Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+- Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
 
 ### Hierarchical Clustering
-#### AGNES Algorithm
+- AGNES Algorithm
 
 
 
 ## Dimentional reduction
-### Multiple Dimensional Scaling (MDS)
+- Multiple Dimensional Scaling (MDS)
 
-### Principal Component Analysis (PCA)
+- Principal Component Analysis (PCA)
 
