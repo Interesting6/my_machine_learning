@@ -41,14 +41,11 @@ X = dataset.values[:, :-1] # m*d
 m,d = X.shape
 
 
-M = distMatrix(X, X)
 
-# for i in range(m):
-#     M[i,i] = np.inf
+M = distMatrix(X, X)
 M[np.where(M==0.)] = np.inf
 
 dfun = distance.dmax()
-
 
 C = [point.reshape(1,d) for point in X] # at the beginning every cluster is a matrix that contain a d-dim point
 q = m # current #Clusters is setup to m
@@ -58,16 +55,19 @@ k = 7 # aim to k clusters
 while q > k:
     i, j = np.where(M == np.min(M))
     i, j = i[0], j[0]
+    i, j  = min(i,j), max(i,j)
     C[i] = np.concatenate((C[i], C[j]), axis=0) #
     C[j:q-1] = C[j+1:q]
+    del C[-1] # Notice this delete otherwise your cluster number is not reduced
     M = np.delete(M, j, axis=0)
     M = np.delete(M, j, axis=1)
     M[i, :] = np.array(list(map(dfun, [C[i]]*(q-1), C[:q-1])))
     M[:, i] = M[i, :]
+    M[i, i] = np.inf # Notice this infinite otherwise you'll get the min dist of the same point
     q -= 1
 
-print(C)
-Cresult = {}
+# print(C)
+Cresult = {} # to collect the point's index in every cluster
 
 for i,clu in enumerate(C):
     Cresult[i] = []
