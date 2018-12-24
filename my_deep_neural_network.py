@@ -86,7 +86,7 @@ class my_DNN(object):
             self.update_parameters(grads)
 
             if print_cost and i % 1000 == 0:
-                print("第 ", i, " 次循环，成本为：" + str(cost))
+                print(i, "th iteration，the cost is：" + str(cost))
 
 
     def forw_propagation(self, X):
@@ -155,4 +155,4 @@ if __name__ == '__main__':
 
     predictions = my_net.predict(X)
     # binary classification accuracy
-    print ('准确率: %d' % float((np.dot(Y, predictions.T) + np.dot(1 - Y, 1 - predictions.T)) / float(Y.size) * 100) + '%')
+    print ('Accuracy: %d' % float((np.dot(Y, predictions.T) + np.dot(1 - Y, 1 - predictions.T)) / float(Y.size) * 100) + '%')
