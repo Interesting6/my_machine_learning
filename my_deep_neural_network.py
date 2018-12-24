@@ -40,40 +40,44 @@ d_activ_func = {
     'tanh': lambda x: 1 - np.power(np.tanh(x), 2),
 }
 
-class my_dnn(object):
-    def __init__(self, hidden_layers_size=(3,), output_layer_size=1, h_activation='relu', learning_rate=1e-2, max_iter=500, alpha=1e-4):
-        """
-        param hidden_layer_size: list-like, form layer 1 to layer L-1,
-        ith element represent the number of ith layer's neurons unit;
-        h_activation: Activation function for the hidden layer
-        learning_rate: learning rate 学习率
-        max_iter: max iteration times
-        alpha: penalty parameters 惩罚参数
+class my_DNN(object):
+    def __init__(self, hidden_layers_size=(3,), h_activation='relu',o_activation='sigmoid', output_layer_size=1, learning_rate=1e-2, max_iter=500, alpha=1e-4):
+        """ my deep neural network
+          In this module, the output activation function defaults to sigmoid.
+        And the cost function defaults to logistic regression's cost function,
+        so that only used to solve binary classification problem.
+
+        parameters@
+          hidden_layer_size: list-like, form layer 1 to layer L-1, ith element represent the number of ith layer's neurons unit;
+          h_activation: Activation function for the hidden layer, default relu function
+          learning_rate: learning rate 学习率
+          max_iter: max iteration times
+          alpha: penalty parameters 惩罚参数
         """
         self.max_iter = max_iter
         self.learning_rate = learning_rate
         self.alpha = alpha
-        self.hidden_layers_size = hidden_layers_size
         self.num_hidden_layers = len(hidden_layers_size) # L-1
-        self.parameters = {'W':[np.random.randn(hidden_layers_size[0], 3) * 0.01, ], # input_layer_size default 3
-                      'b':[np.zeros(shape=(hidden_layers_size[0], 1)), ] }
-        for ith in range(self.num_hidden_layers)[1:]: # from layer 1 to L-1
-            self.parameters['W'].append(np.random.randn(hidden_layers_size[ith], hidden_layers_size[ith-1]) * 0.01)
-            self.parameters['b'].append(np.zeros(shape=(hidden_layers_size[ith], 1)))
-        # layer L:
-        self.parameters['W'].append(np.random.randn(output_layer_size, hidden_layers_size[-1]) * 0.01)
-        self.parameters['b'].append(np.zeros(shape=(output_layer_size, 1)))
-
         self.hidden_act_fun = activ_func[h_activation]
         self.hidden_dact_fun = d_activ_func[h_activation]
-        self.output_act_fun = activ_func['sigmoid']
+        self.output_act_fun = activ_func[o_activation]
 
+        assert self.num_hidden_layers >= 0, 'have error hidden layer'
+        self.depth = self.num_hidden_layers + 2 # L+1, at least 2 layers
+        self.layers_size = [2,] + list(hidden_layers_size) + [output_layer_size,] \
+                if not isinstance(hidden_layers_size, list) else hidden_layers_size  # all layers's neurons size
+
+        self.parameters = {'W':[0, ] * self.depth, # input_layer_size default 3
+                           'b':[0, ] * self.depth, }
+        for ith in range(1, self.depth): # from layer 1 to L
+            self.parameters['W'][ith] = np.random.randn(self.layers_size[ith], self.layers_size[ith-1]) * 0.01
+            self.parameters['b'][ith] = np.zeros(shape=(self.layers_size[ith], 1))
 
 
     def train(self, X, Y, print_cost=False):
-        self.X, self.Y = X,Y
+        self.X, self.Y = X, Y
         self.dim, self.m = X.shape
-        self.parameters['W'][0] = np.random.randn(self.hidden_layers_size[0], self.dim) * 0.01
+        self.parameters['W'][1] = np.random.randn(self.layers_size[1], self.dim) * 0.01
 
         for i in range(self.max_iter):
             A, Z = self.forw_propagation(X)
@@ -87,13 +91,13 @@ class my_dnn(object):
 
     def forw_propagation(self, X):
         W, b = self.parameters['W'], self.parameters['b']
-        # A = [ X ], Z = []
-        Z = [ np.dot(W[0], X) + b[0] ]
-        A = [ self.hidden_act_fun(Z[0]) ]
-        for i in range(self.num_hidden_layers)[1:]: # from layer 1 to L-1
+        Z = [0, ]
+        A = [ X ]
+
+        for i in range(1, self.depth-1): # from layer 1 to L-1
             Z.append( np.dot(W[i], A[i-1]) + b[i] )
             A.append( self.hidden_act_fun(Z[i]) )
-        # layer L, len(A)=L-1, len(W)=len(b)=L
+        # layer L, at this time: len(A)=L-1, len(W)=len(b)=L
         Z.append( np.dot(W[-1], A[-1]) + b[-1] )
         A.append( self.output_act_fun(Z[-1]) )
         return A, Z
@@ -101,39 +105,34 @@ class my_dnn(object):
 
     def compute_cost(self, AL, Y,):
         logprobs = np.multiply(Y, np.log(AL)) + np.multiply((1-Y), np.log(1-AL))
-        cost = -np.sum(logprobs) / self.m
+        cost = - np.sum(logprobs) / self.m
         cost = float(np.squeeze(cost))
         return cost
 
 
     def back_propagation(self, A, Z):
         W = self.parameters['W']
-        # b = self.parameters['b']
         m = self.m
+        dZ = [0] * (self.num_hidden_layers + 2)
+        dW = [0] * (self.num_hidden_layers + 2)
+        db = [0] * (self.num_hidden_layers + 2)
+        # layer L
+        dZ[-1] =  A[-1] - self.Y
+        dW[-1] =  (1/m) * np.dot(dZ[-1], A[-2].T)
+        db[-1] =  (1/m) * np.sum(dZ[-1], axis=1, keepdims=True)
 
-        dZ = [ A[-1] - self.Y ] # layer L
-        dW = [ (1/m) * np.dot(dZ[0], A[-2].T) ]
-        db = [ (1/m) * np.sum(dZ[0], axis=1, keepdims=True) ]
+        for i in range(1, self.depth-1)[::-1]: # from layer L-1 to 1
+            dZ[i] = np.multiply(np.dot(W[i+1].T, dZ[i+1]), self.hidden_dact_fun(Z[i]) )
+            dW[i] = (1/m) * np.dot(dZ[i], A[i-1].T)
+            db[i] = (1/m) * np.sum(dZ[i], axis=1, keepdims=True)
 
-        for i in range(self.num_hidden_layers)[:1:-1]: # from layer L-1 to 1
-            temp = np.multiply(np.dot(W[i].T, dZ[i]), self.hidden_dact_fun(Z[i-1]) )
-            dZ.append( temp )
-            dW.append( (1/m) * np.dot(temp, A[i-1].T) )
-            db.append( (1/m) * np.sum(temp, axis=1, keepdims=True) )
-        # layer 1 to layer 0
-        temp = np.multiply(np.dot(W[1].T, dZ[-1]), self.hidden_dact_fun(Z[0]))
-        dZ.append(temp)
-        dW.append((1 / m) * np.dot(temp, self.X.T))
-        db.append((1 / m) * np.sum(temp, axis=1, keepdims=True))
-
-        grads = {"dW": dW[::-1], "db": db[::-1],}
+        grads = {"dW": dW, "db": db,}
         return grads
 
 
     def update_parameters(self, grads, ):
         dW, db = grads["dW"], grads["db"]
-
-        for i in range(self.num_hidden_layers+1):
+        for i in range(1, self.depth):
             self.parameters['W'][i] = self.parameters['W'][i] - self.learning_rate * dW[i]
             self.parameters['b'][i] = self.parameters['b'][i] - self.learning_rate * db[i]
 
@@ -148,10 +147,12 @@ class my_dnn(object):
 
 if __name__ == '__main__':
     X, Y = load_planar_dataset()
-    my_net = my_dnn(hidden_layers_size=(4, ),h_activation='tanh', max_iter=10000, learning_rate=0.5, )
+    my_net = my_DNN(hidden_layers_size=(4, 3,), h_activation='tanh', max_iter=10000, learning_rate=0.5, )
     my_net.train(X, Y, print_cost=True)
+
     plot_decision_boundary(lambda x: my_net.predict(x), X, Y)
     plt.title("Decision Boundary for hidden layer size " + str(4))
 
     predictions = my_net.predict(X)
+    # binary classification accuracy
     print ('准确率: %d' % float((np.dot(Y, predictions.T) + np.dot(1 - Y, 1 - predictions.T)) / float(Y.size) * 100) + '%')
