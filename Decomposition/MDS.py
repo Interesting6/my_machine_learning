@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # Author: Treamy
+# MDS 多维尺度缩放
 
 
 import numpy as np

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 # Author: Treamy
+# LVQ学习矢量量化(Learning Vector Quantization)
 
 import numpy as np
 import pandas as pd
